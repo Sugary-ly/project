@@ -1,0 +1,43 @@
+import requests
+import json
+
+number = 1
+num = 1
+flag = 1
+headers = {'Cookie': '_uuid=74A27002-841E-65D7-62A2-651ACE05B45E45703infoc; buvid3=F9B3E544-9C34-406E-8401-63DCADA0BA4153915infoc; INTVER=1; PVID=1',
+'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36',
+'Referer': 'https://www.bilibili.com/v/douga/mad/'}
+
+img_headers = {'Host': 'i0.hdslb.com'}
+
+f = open(r'C:\Users\sugar\Desktop\spiders\spider.txt','w',encoding='utf-8')
+
+while(flag):
+	
+	#包含js的网址（爬取2020年3月5日到3月12日播放量大于十万的视频信息）
+	url = 'https://s.search.bilibili.com/cate/search?main_ver=v3&search_type=video&view_type=hot_rank&order=click&copy_right=-1&cate_id=24&page='+str(number)+'&pagesize=20&jsonp=jsonp&time_from=20200305&time_to=20200312&_=1583993706290'
+
+	r = requests.get(url,headers=headers)
+	if r.status_code == 200:
+		content = json.loads(r.text)
+		for i in content['result']:
+			if int(i['play'])<100000:
+				flag = 0
+				break
+			f.write('标题'+':'+str(i['title'])+'\n')
+			f.write('视频地址'+':'+str(i['arcurl'])+'\n')
+			f.write('播放量'+':'+str(i['play'])+'\n')
+			f.write('评论数'+':'+str(i['video_review'])+'\n\n')
+			img_url = i['pic']
+			req = requests.get('http:'+str(img_url),headers=img_headers)
+			if req.status_code == 200:
+
+				#下载封面
+				open(r'C:\Users\sugar\Desktop\spiders\img_'+str(num)+'.png','wb').write(req.content)
+			else:
+				print('第'+str(num)+'张图片下载失败')
+			num = num + 1
+	else:
+		print('error!')
+		break
+	number = number + 1
